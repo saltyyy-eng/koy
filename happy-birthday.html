@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Birthday!</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    /* Start Screen */
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a1a 100%);
+      transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    #start-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .start-title {
+      font-size: 3rem;
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      margin-bottom: 10px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .start-subtitle {
+      font-size: 1.2rem;
+      color: #e0e0e0;
+      margin-bottom: 20px;
+    }
+
+    .name-label {
+      font-size: 1rem;
+      color: #ffd700;
+      margin-bottom: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .name-boxes {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .name-box {
+      width: 55px;
+      height: 65px;
+      font-size: 2rem;
+      text-align: center;
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffd700;
+      font-weight: bold;
+      text-transform: uppercase;
+      outline: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+    }
+
+    .name-box:focus {
+      background: rgba(255, 215, 0, 0.15);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+      transform: scale(1.1);
+    }
+
+    .start-btn {
+      padding: 18px 50px;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+      color: #1a1a2e;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .start-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Celebration Screen */
+    #celebration {
+      position: fixed;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    #celebration.active {
+      display: flex;
+    }
+
+    /* Animated Background */
+    .bg-anim {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460, #533483, #e94560);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      z-index: 0;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Floating Hearts */
+    .heart {
+      position: fixed;
+      font-size: 1.5rem;
+      animation: floatHeart linear infinite;
+      z-index: 5;
+      opacity: 0.7;
+    }
+
+    @keyframes floatHeart {
+      0% { transform: translateY(100vh) scale(0.5) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.7; }
+      100% { transform: translateY(-120px) scale(1) rotate(360deg); opacity: 0; }
+    }
+
+    /* Envelope */
+    .envelope-container {
+      position: relative;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: opacity 0.8s ease;
+    }
+
+    .envelope-container.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .envelope-hint {
+      color: #ffd700;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .envelope {
+      width: 280px;
+      height: 180px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .envelope:hover {
+      transform: scale(1.05);
+    }
+
+    .envelope-body {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #d4a373, #c8956d);
+      border-radius: 4px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 90px;
+      background: linear-gradient(135deg, #e6b89c, #d4a373);
+      clip-path: polygon(0 0, 50% 100%, 100% 0);
+      transform-origin: top;
+      transition: transform 0.6s ease;
+      z-index: 5;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .envelope.open .envelope-flap {
+      transform: rotateX(180deg);
+    }
+
+    .envelope-pocket {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: linear-gradient(135deg, #c8956d, #b8835a);
+      clip-path: polygon(0 40%, 50% 0, 100% 40%, 100% 100%, 0 100%);
+      z-index: 4;
+    }
+
+    .wax-seal {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -30%);
+      width: 50px;
+      height: 50px;
+      background: radial-gradient(circle, #e74c3c, #c0392b);
+      border-radius: 50%;
+      z-index: 6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: opacity 0.3s ease;
+    }
+
+    .envelope.open .wax-seal {
+      opacity: 0;
+    }
+
+    /* Letter Paper */
+    .letter-container {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      padding: 20px;
+    }
+
+    .letter-container.show {
+      display: flex;
+    }
+
+    .letter-paper {
+      width: 100%;
+      max-width: 560px;
+      max-height: 85vh;
+      background: linear-gradient(135deg, #fef9f3, #fdf3e7);
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      overflow-y: auto;
+      position: relative;
+      transform: translateY(50px) scale(0.9);
+      opacity: 0;
+      transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .letter-paper.revealed {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    .letter-paper::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 40px;
+      right: 40px;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #e74c3c, transparent);
+      border-radius: 2px;
+    }
+
+    .letter-to {
+      font-family: 'Georgia', serif;
+      font-size: 1.1rem;
+      color: #8b4513;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .letter-title {
+      font-family: 'Georgia', serif;
+      font-size: 1.8rem;
+      color: #c0392b;
+      text-align: center;
+      margin-bottom: 25px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .letter-body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 1.15rem;
+      line-height: 2;
+      color: #4a3728;
+      margin-bottom: 25px;
+    }
+
+    .letter-line {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      margin: 4px 0;
+    }
+
+    .letter-line.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .letter-signature {
+      font-family: 'Georgia', serif;
+      font-size: 1.1rem;
+      color: #8b4513;
+      text-align: right;
+      font-style: italic;
+      margin-top: 20px;
+    }
+
+    .letter-close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(192, 57, 43, 0.1);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #c0392b;
+      transition: background 0.3s ease;
+    }
+
+    .letter-close-btn:hover {
+      background: rgba(192, 57, 43, 0.2);
+    }
+
+    /* Feedback Section */
+    .feedback-section {
+      margin-top: 25px;
+      border-top: 1px dashed #d4a373;
+      padding-top: 20px;
+      text-align: center;
+    }
+
+    .feedback-toggle-btn {
+      background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+      border: none;
+      padding: 10px 24px;
+      border-radius: 25px;
+      color: #1a1a2e;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feedback-toggle-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+    }
+
+    .feedback-form {
+      display: none;
+      margin-top: 15px;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    .feedback-form.show {
+      display: block;
+    }
+
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border: 2px solid #d4a373;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      color: #4a3728;
+      font-family: 'Georgia', serif;
+      font-size: 1rem;
+      resize: vertical;
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .feedback-textarea:focus {
+      border-color: #c0392b;
+      box-shadow: 0 0 10px rgba(192, 57, 43, 0.2);
+    }
+
+    .feedback-send-btn {
+      background: linear-gradient(135deg, #6bcf7f, #4d96ff);
+      border: none;
+      padding: 10px 28px;
+      border-radius: 25px;
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(77, 150, 255, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feedback-send-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(77, 150, 255, 0.5);
+    }
+
+    .feedback-hint {
+      font-size: 0.8rem;
+      color: #8b4513;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .envelope { width: 220px; height: 140px; }
+      .envelope-flap { height: 70px; }
+      .letter-paper { padding: 24px; }
+      .letter-title { font-size: 1.4rem; }
+      .letter-body { font-size: 1rem; }
+      .start-title { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <div class="start-title">🎉 Surprise! 🎉</div>
+    <div class="start-subtitle">A special celebration awaits you</div>
+    <div class="name-label">Enter Name</div>
+    <div class="name-boxes">
+      <input type="text" class="name-box" maxlength="1" data-index="0">
+      <input type="text" class="name-box" maxlength="1" data-index="1">
+      <input type="text" class="name-box" maxlength="1" data-index="2">
+      <input type="text" class="name-box" maxlength="1" data-index="3">
+      <input type="text" class="name-box" maxlength="1" data-index="4">
+    </div>
+    <button class="start-btn" id="startBtn">🎂 Click to Celebrate 🎂</button>
+  </div>
+
+  <!-- Celebration -->
+  <div class="bg-anim"></div>
+  <div id="celebration">
+    <!-- Envelope Stage -->
+    <div class="envelope-container" id="envelopeContainer">
+      <div class="envelope-hint">💌 Tap the envelope to open your letter</div>
+      <div class="envelope" id="envelope">
+        <div class="envelope-body"></div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-pocket"></div>
+        <div class="wax-seal">💕</div>
+      </div>
+    </div>
+
+    <!-- Letter Stage -->
+    <div class="letter-container" id="letterContainer">
+      <div class="letter-paper" id="letterPaper">
+        <button class="letter-close-btn" id="letterCloseBtn">✕</button>
+        <div class="letter-to" id="letterTo">To My Dearest Friend,</div>
+        <div class="letter-title">🎉 Happy Birthday! 🎉</div>
+        <div class="letter-body" id="letterBody"></div>
+        <div class="letter-signature" id="letterSignature">With all my love,<br>Your Secret Admirer 💕</div>
+        <div class="feedback-section">
+          <button class="feedback-toggle-btn" id="feedbackToggleBtn">💌 Send a Reply</button>
+          <div class="feedback-form" id="feedbackForm">
+            <textarea class="feedback-textarea" id="feedbackTextarea" placeholder="Write your message here..."></textarea>
+            <button class="feedback-send-btn" id="feedbackSendBtn">📤 Send Feedback</button>
+            <div class="feedback-hint">This will open your email app. Replace the email in the code with yours!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const startScreen = document.getElementById('start-screen');
+    const celebration = document.getElementById('celebration');
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    const nameBoxes = document.querySelectorAll('.name-box');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let confettiParticles = [];
+    let animationRunning = false;
+    let birthdayName = '';
+
+    // Name box input handling
+    nameBoxes.forEach((box, index) => {
+      box.addEventListener('input', (e) => {
+        const val = e.target.value.toUpperCase();
+        e.target.value = val;
+        if (val && index < nameBoxes.length - 1) {
+          nameBoxes[index + 1].focus();
+        }
+      });
+
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          startBtn.click();
+          return;
+        }
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          nameBoxes[index - 1].focus();
+        }
+      });
+
+      box.addEventListener('focus', () => {
+        box.select();
+      });
+    });
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // Confetti Particle Class
+    class Confetti {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height - canvas.height;
+        this.size = Math.random() * 8 + 4;
+        this.speedY = Math.random() * 3 + 2;
+        this.speedX = Math.random() * 2 - 1;
+        this.color = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d96ff', '#ff6bcb', '#a855f7'][Math.floor(Math.random() * 6)];
+        this.rotation = Math.random() * 360;
+        this.rotationSpeed = Math.random() * 4 - 2;
+        this.opacity = 1;
+      }
+
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.rotation += this.rotationSpeed;
+        if (this.y > canvas.height) {
+          this.y = -10;
+          this.x = Math.random() * canvas.width;
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate((this.rotation * Math.PI) / 180);
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        ctx.restore();
+      }
+    }
+
+    // Initialize confetti
+    function initConfetti() {
+      confettiParticles = [];
+      for (let i = 0; i < 200; i++) {
+        confettiParticles.push(new Confetti());
+      }
+    }
+
+    // Animate confetti
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiParticles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      if (animationRunning) {
+        requestAnimationFrame(animateConfetti);
+      }
+    }
+
+    // Create balloons
+    function createBalloons() {
+      const colors = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d96ff', '#ff6bcb', '#a855f7'];
+      for (let i = 0; i < 15; i++) {
+        const balloon = document.createElement('div');
+        balloon.className = 'balloon';
+        balloon.style.left = Math.random() * 100 + 'vw';
+        balloon.style.background = colors[Math.floor(Math.random() * colors.length)];
+        balloon.style.animationDuration = (Math.random() * 5 + 8) + 's';
+        balloon.style.animationDelay = (Math.random() * 5) + 's';
+        document.body.appendChild(balloon);
+      }
+    }
+
+    // Create sparkles
+    function createSparkles() {
+      for (let i = 0; i < 30; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = Math.random() * 100 + 'vw';
+        sparkle.style.top = Math.random() * 100 + 'vh';
+        sparkle.style.animationDelay = Math.random() * 2 + 's';
+        sparkle.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+        document.body.appendChild(sparkle);
+      }
+    }
+
+    // Play birthday melody using Web Audio API (no external files needed)
+    function playBirthdayMelody() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      
+      const audioCtx = new AudioContext();
+      
+      const notes = [
+        { f: 261.63, d: 0.4 }, // C4
+        { f: 261.63, d: 0.4 }, // C4
+        { f: 293.66, d: 0.8 }, // D4
+        { f: 261.63, d: 0.8 }, // C4
+        { f: 349.23, d: 0.8 }, // F4
+        { f: 329.63, d: 0.8 }, // E4
+        { f: 261.63, d: 0.4 }, // C4
+        { f: 261.63, d: 0.4 }, // C4
+        { f: 293.66, d: 0.8 }, // D4
+        { f: 261.63, d: 0.8 }, // C4
+        { f: 392.00, d: 0.8 }, // G4
+        { f: 349.23, d: 0.8 }, // F4
+      ];
+      
+      let startTime = audioCtx.currentTime + 0.1;
+      
+      notes.forEach(note => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.value = note.f;
+        
+        gain.gain.setValueAtTime(0.15, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + note.d);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start(startTime);
+        osc.stop(startTime + note.d);
+        
+        startTime += note.d;
+      });
+    }
+
+    // Envelope and Letter elements
+    const envelope = document.getElementById('envelope');
+    const envelopeContainer = document.getElementById('envelopeContainer');
+    const letterContainer = document.getElementById('letterContainer');
+    const letterPaper = document.getElementById('letterPaper');
+    const letterBody = document.getElementById('letterBody');
+    const letterTo = document.getElementById('letterTo');
+    const letterCloseBtn = document.getElementById('letterCloseBtn');
+
+    // Create floating hearts
+    function createHearts() {
+      const hearts = ['💕', '💖', '💗', '💓', '💝', '❤️', '🧡', '💛'];
+      for (let i = 0; i < 20; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.animationDuration = (Math.random() * 4 + 6) + 's';
+        heart.style.animationDelay = (Math.random() * 5) + 's';
+        heart.style.fontSize = (Math.random() * 1 + 1) + 'rem';
+        document.body.appendChild(heart);
+      }
+    }
+
+    // Build letter content with typewriter reveal
+    function revealLetter(text) {
+      letterBody.innerHTML = '';
+      const lines = text.split('\n').filter(line => line.trim() !== '');
+      if (lines.length === 0) {
+        lines.push('Wishing you the happiest of birthdays!');
+      }
+
+      lines.forEach((line, index) => {
+        const div = document.createElement('div');
+        div.className = 'letter-line';
+        div.textContent = line;
+        letterBody.appendChild(div);
+
+        setTimeout(() => {
+          div.classList.add('visible');
+        }, 600 + (index * 600));
+      });
+    }
+
+    // Open envelope
+    envelope.addEventListener('click', () => {
+      envelope.classList.add('open');
+
+      setTimeout(() => {
+        envelopeContainer.classList.add('hidden');
+        letterContainer.classList.add('show');
+
+        setTimeout(() => {
+          letterPaper.classList.add('revealed');
+        }, 100);
+      }, 700);
+    });
+
+    // Close letter
+    letterCloseBtn.addEventListener('click', () => {
+      letterPaper.classList.remove('revealed');
+      setTimeout(() => {
+        letterContainer.classList.remove('show');
+        envelopeContainer.classList.remove('hidden');
+        envelope.classList.remove('open');
+      }, 400);
+    });
+
+    // Feedback section
+    const feedbackToggleBtn = document.getElementById('feedbackToggleBtn');
+    const feedbackForm = document.getElementById('feedbackForm');
+    const feedbackTextarea = document.getElementById('feedbackTextarea');
+    const feedbackSendBtn = document.getElementById('feedbackSendBtn');
+    const YOUR_EMAIL = 'your-email@example.com'; // <-- Replace this with your email
+
+    feedbackToggleBtn.addEventListener('click', () => {
+      feedbackForm.classList.toggle('show');
+      if (feedbackForm.classList.contains('show')) {
+        feedbackTextarea.focus();
+      }
+    });
+
+    feedbackSendBtn.addEventListener('click', () => {
+      const message = feedbackTextarea.value.trim();
+      if (!message) {
+        alert('Please write a message before sending! 💕');
+        return;
+      }
+      const subject = encodeURIComponent('Birthday Letter Feedback' + (birthdayName ? ' from ' + birthdayName : ''));
+      const body = encodeURIComponent(message);
+      window.location.href = 'mailto:' + YOUR_EMAIL + '?subject=' + subject + '&body=' + body;
+    });
+
+    // Start celebration
+    startBtn.addEventListener('click', () => {
+      // Collect name from boxes
+      birthdayName = Array.from(nameBoxes).map(box => box.value).join('').trim();
+
+      if (birthdayName) {
+        letterTo.textContent = 'To My Dear Friend ' + birthdayName + ',';
+        document.querySelector('.letter-title').textContent = '🎉 Happy Birthday ' + birthdayName + '! 🎉';
+      } else {
+        letterTo.textContent = 'To My Dearest Friend,';
+      }
+
+      // Default birthday message
+      const defaultMessage = 'On this special day, I want you to know how much you mean to me.\nYou light up every room you walk into and bring joy to everyone around you.\nMay this year be filled with love, laughter, and all your heart\'s desires.\nYou deserve nothing but the absolute best.\nHappy Birthday! 🎂🎈';
+
+      revealLetter(defaultMessage);
+
+      startScreen.classList.add('hidden');
+      celebration.classList.add('active');
+
+      initConfetti();
+      animationRunning = true;
+      animateConfetti();
+
+      createHearts();
+      playBirthdayMelody();
+
+      // Burst confetti from center initially
+      for (let i = 0; i < 100; i++) {
+        const p = new Confetti();
+        p.x = canvas.width / 2;
+        p.y = canvas.height / 2;
+        p.speedX = (Math.random() - 0.5) * 15;
+        p.speedY = (Math.random() - 0.5) * 15;
+        confettiParticles.push(p);
+      }
+    });
+  </script>
+</body>
+</html>
+
